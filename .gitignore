@@ -11,6 +11,8 @@ __pycache__/
 *.snm
 *.pdf
 __init__.py
+*.txt
+
 
 # C extensions
 *.so
