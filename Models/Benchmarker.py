@@ -18,6 +18,8 @@ from imblearn.over_sampling import SMOTE
 
 import matplotlib.pyplot as plt
 
+from PreProcessing.semanticExtractor import constructSemanticInput
+
 
 """
 Class to do benchmark for a set of classifier with desired vectorizer
@@ -25,7 +27,7 @@ Class to do benchmark for a set of classifier with desired vectorizer
 class Benchmarker:
     def __init__(self, vectorizer, X_train, y_train, X_test, y_test, over_sampling=False):
         """
-
+        init for vector models
         :param vectorizer: a vectorizer with .fit and .transform mathod implemented
         :param X_train: as name
         :param y_train: ...
@@ -42,6 +44,8 @@ class Benchmarker:
             self.X_train, self.y_train = SMOTE(random_state=42).fit_sample(self.X_train, self.y_train)
         self.X_test = self.vectorizer.transform(X_test)
         self.y_test = y_test
+
+        #for semantic model:
 
         self.grid_search_result = None
         self.best_model = (None, None, None) # (clf, score, pred)
@@ -74,7 +78,7 @@ class Benchmarker:
         test_time = time() - t0
         print("test time:  %0.3fs" % test_time)
 
-        score = metrics.f1_score(self.y_test, pred, average='micro')
+        score = metrics.f1_score(self.y_test, pred, average='weighted')
         print("f1: %0.3f" % score)
 
         print("classification report:")
@@ -97,12 +101,12 @@ class Benchmarker:
         for clf, name in (
                 (PassiveAggressiveClassifier(n_iter=50, random_state=42, average=0,
                                              class_weight='balanced'), "Passive-Aggressive"),
-                (KNeighborsClassifier(n_neighbors=10, n_jobs=8), "10NN"),
-                (KNeighborsClassifier(n_neighbors=20, n_jobs=8), "20NN"),
-                (RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=8,
-                                        class_weight='balanced'), "100 Random forest"),
-                (RandomForestClassifier(n_estimators=50, random_state=42, n_jobs=8,
-                                        class_weight='balanced'), "50 Random forest")
+                # (KNeighborsClassifier(n_neighbors=10, n_jobs=8), "10NN"),
+                # (KNeighborsClassifier(n_neighbors=20, n_jobs=8), "20NN"),
+                # (RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=8,
+                #                         class_weight='balanced'), "100 Random forest"),
+                # (RandomForestClassifier(n_estimators=50, random_state=42, n_jobs=8,
+                #                         class_weight='balanced'), "50 Random forest")
         ):
             print('=' * 80)
             print(name)
@@ -140,10 +144,10 @@ class Benchmarker:
                                                             tol=1e-3))),
             ('classification', LinearSVC(penalty="l2",random_state=42, class_weight='balanced'))])))
 
-        print('=' * 80)
-        print("XGBoost Tree")
-        results.append(self.benchmark(XGBClassifier(max_depth=10, learning_rate=0.1,
-                                                    seed=42, nthread=8)))
+        # print('=' * 80)
+        # print("XGBoost Tree")
+        # results.append(self.benchmark(XGBClassifier(max_depth=10, learning_rate=0.1,
+        #                                             seed=42, nthread=8)))
 
         self.grid_search_result = results
         return results

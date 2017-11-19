@@ -13,6 +13,7 @@ __pycache__/
 __init__.py
 *.txt
 *.png
+*.crfsuite
 
 # C extensions
 *.so

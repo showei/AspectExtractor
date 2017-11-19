@@ -1,4 +1,6 @@
 import pandas as pd
+import numpy as np
+import nltk
 import re
 
 from nltk.stem import SnowballStemmer
