@@ -1,5 +1,9 @@
 import pandas as pd
 import numpy as np
+from sklearn import metrics
+
+
+from Models.CRFClassifier import bio_classification_report
 
 
 DATA_PATH = "../data"
@@ -25,7 +29,7 @@ def majority_element(target_list):
     return target_list[idx]
 
 
-def conv2sentence(result_fn, cleaned_fn, mapped_fn=None):
+def conv2sentence(result_fn, cleaned_fn, mapped_fn=None, for_prediction=True):
     """
     convert prediction result from convolution format to sentence format
     :param result_fn:
@@ -36,7 +40,7 @@ def conv2sentence(result_fn, cleaned_fn, mapped_fn=None):
     doc = pd.read_csv(cleaned_fn)['review']
     result_df = pd.read_csv(result_fn)
     conv_words = [conv.split()[2] for conv in result_df['review']]
-    predictions = list(result_df['pred'])
+    predictions = list(result_df['pred' if for_prediction else 'terms'])
 
     current = 0
     predicted_tags = []
@@ -90,3 +94,43 @@ def conv2sentence(result_fn, cleaned_fn, mapped_fn=None):
         df.to_csv(mapped_fn, index=False, encoding="utf8")
 
     return df
+
+def convert2bio(df):
+    def converter(term):
+        tags = term.split(",")
+        for i, tag in enumerate(tags):
+            if tag == "BB":
+                tags[i] = "O"
+                if i + 1 < len(tags) and tags[i + 1] == "O":
+                    tags[i + 1] = "B"
+            if tag == "I" and (i == 0 or tags[i - 1] == "O"):
+                tags[i] = "B"
+            if tag == "EB":
+                tags[i] = "O"
+                if i > 0 and tags[i - 1] == "O":
+                    tags[i - 1] = "B"
+            if tag == "EI":
+                tags[i] = "O"
+                if i > 0 and tags[i - 1] == "O":
+                    tags[i - 1] = "I"
+        return tags
+
+
+    return list(df['terms'].apply(converter)),\
+           list(df['pred'].apply(converter))
+
+
+
+if __name__ == "__main__":
+    #some benchmark after post-processing
+    df_pred = conv2sentence("../results/prediction_result.csv",
+                  "../data/cleaned_test.csv", for_prediction=True)
+    df_truth = conv2sentence("../results/prediction_result.csv",
+                            "../data/cleaned_test.csv", for_prediction=False)
+    y_pred = list(df_pred['terms'].apply(lambda term: term.split(",")))
+    y_truth = list(df_truth['terms'].apply(lambda term: term.split(",")))
+    print(bio_classification_report(y_truth, y_pred))
+
+    # df_crf = pd.read_csv("../results/crf_result.csv")
+    # y_truth, y_pred = convert2bio(df_crf)
+    # print(bio_classification_report(y_truth, y_pred))

@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
-
+import nltk
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-from PreProcessing.semanticExtractor import constructSemanticInput
+from PreProcessing.semanticExtractor import constructSemanticInput, add_tfidf_to_feature
 from PreProcessing.xmlParser import xml2csv
 from PreProcessing.dataCleaner import clean_pipeline
 from PreProcessing.inputConstructor import generate_input_csv
@@ -11,7 +11,13 @@ from Models.Benchmarker import Benchmarker
 from Models.CRFClassifier import CRFClassifier, bio_classification_report
 
 DATA_PATH = "data"
+
+
 if __name__ == "__main__":
+    #download nltk data, comment it if already have it.
+    print("downlaoding nltk data")
+    nltk.download("all")
+
     #prepare csv data
     print("parsing csv data...")
     xml2csv("{}/Laptops_Train_v2.xml".format(DATA_PATH), "{}/raw_train.csv".format(DATA_PATH))
@@ -56,11 +62,26 @@ if __name__ == "__main__":
     print("start to benchmark semantic model")
     X_train, y_train = constructSemanticInput("data/input_train_tag.csv", "data/cleaned_train.csv")
     X_test, y_test = constructSemanticInput("data/input_test_tag.csv", "data/cleaned_test.csv")
+
+    # add tf-idf to features
+    df = pd.read_csv("data/cleaned_train.csv")
+    doc = df['review']
+    vectorizer = TfidfVectorizer(stop_words=None, ngram_range=(1, 1))
+    vectorizer.fit(doc)
+
+    # add tfidf score to feature, show no improvement
+    # add_tfidf_to_feature(X_train, df, vectorizer)
+    # add_tfidf_to_feature(X_test, pd.read_csv("../data/cleaned_test.csv"), vectorizer)
+
+
     crf = CRFClassifier()
     crf.fit(X_train, y_train)
     pred = crf.predict(X_test)
     df = pd.read_csv("data/cleaned_test.csv")
+    df['terms'] = y_test
     df['pred'] = pred
+    df['terms'] = df['terms'].apply(lambda term: ",".join(term))
+    df['pred'] = df['pred'].apply(lambda pred: ",".join(pred))
     df.to_csv("results/crf_result.csv", encoding='utf-8', index=False)
 
     print(bio_classification_report(y_test, pred))

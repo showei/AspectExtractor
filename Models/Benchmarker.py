@@ -45,7 +45,6 @@ class Benchmarker:
         self.X_test = self.vectorizer.transform(X_test)
         self.y_test = y_test
 
-        #for semantic model:
 
         self.grid_search_result = None
         self.best_model = (None, None, None) # (clf, score, pred)
@@ -164,8 +163,8 @@ class Benchmarker:
         results = [[x[i] for x in self.grid_search_result] for i in range(4)]
 
         clf_names, score, training_time, test_time = results
-        training_time = np.array(training_time) / np.max(training_time)
-        test_time = np.array(test_time) / np.max(test_time)
+        # training_time = np.array(training_time) / np.max(training_time)
+        # test_time = np.array(test_time) / np.max(test_time)
 
         fig = plt.figure(figsize=(12, 8))
         plt.title("Score")

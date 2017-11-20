@@ -5,23 +5,24 @@ from itertools import chain
 from collections import Counter
 
 import pycrfsuite
-from PreProcessing.semanticExtractor import constructSemanticInput
+from PreProcessing.semanticExtractor import constructSemanticInput, add_tfidf_to_feature
 from sklearn.preprocessing import LabelBinarizer
-
+from sklearn.feature_extraction.text import TfidfVectorizer
+from nltk.corpus import stopwords
 
 class CRFClassifier:
     def __init__(self, c1=1.0, c2=1e-3, max_iterations=50):
         """
         make a Classifier class that has similar interface of sklearn for easy benchmark
-        :param c1:
-        :param c2:
-        :param max_iterations:
+        :param c1: coefficient for L1 penalty
+        :param c2: coefficient for L2 penalty
+        :param max_iterations: for early stop
         """
         self.clf = None
         self.params = {
-            'c1': c1,  # coefficient for L1 penalty
-            'c2': c2,  # coefficient for L2 penalty
-            'max_iterations': max_iterations,  # stop earlier
+            'c1': c1,
+            'c2': c2,
+            'max_iterations': max_iterations,
 
             # include transitions that are possible, but not observed
             'feature.possible_transitions': True
@@ -48,7 +49,7 @@ class CRFClassifier:
         """
         like sklearn
         :param X_test:
-        :return:
+        :return: predictions
         """
         tagger = pycrfsuite.Tagger()
         tagger.open('crf_model.crfsuite')
@@ -58,7 +59,7 @@ class CRFClassifier:
 
     def learned_transitions(self, top_num=15):
         """
-        print and return top learned transitions
+        print and return top (top_num) learned transitions
         :param top_num:
         :return:
         """
@@ -83,7 +84,7 @@ class CRFClassifier:
 
     def state_features(self, top_num=20):
         """
-        print and return top state features
+        print and return top (top_num) state features
         :param top_num:
         :return:
         """
@@ -130,11 +131,29 @@ def bio_classification_report(y_true, y_pred):
 if __name__ == "__main__":
     X_train, y_train = constructSemanticInput("../data/input_train_tag.csv", "../data/cleaned_train.csv")
     X_test, y_test = constructSemanticInput("../data/input_test_tag.csv", "../data/cleaned_test.csv")
+
+    #add tf-idf to features
+    # tried adding TFIDF score, show no improvements, with or without stop words
+    # df = pd.read_csv("../data/cleaned_train.csv")
+    # doc = df['review']
+    #
+    # stops = set(stopwords.words("english"))
+    # stops.add('nan')
+    # vectorizer = TfidfVectorizer(stop_words=stops, ngram_range=(1, 1))
+    # vectorizer.fit(doc)
+    #
+    # add_tfidf_to_feature(X_train, df, vectorizer)
+    # add_tfidf_to_feature(X_test, pd.read_csv("../data/cleaned_test.csv"), vectorizer)
+
+
     crf = CRFClassifier()
     crf.fit(X_train, y_train)
     pred = crf.predict(X_test)
     df = pd.read_csv("../data/cleaned_test.csv")
+    df['terms'] = y_test
     df['pred'] = pred
+    df['terms'] = df['terms'].apply(lambda term: ",".join(term))
+    df['pred'] = df['pred'].apply(lambda pred: ",".join(pred))
     df.to_csv("../results/crf_result.csv", encoding='utf-8', index=False)
 
     print(bio_classification_report(y_test, pred))

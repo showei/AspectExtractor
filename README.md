@@ -2,7 +2,7 @@
 Evaluated two types of methodologies WITHOUT Deep Learning: word vector and semantic features
 
 
-##Requirements:
+## Requirements:
 Python 3.5 (other version should be fine, not tested though)\
 * numpy
 * pandas
@@ -14,18 +14,18 @@ Python 3.5 (other version should be fine, not tested though)\
 * nltk
 * lxml
 
-##Module Structure:
+## Module Structure:
 ![alt text](https://github.com/showei/AspectExtractor/blob/master/module_structure.jpg "Logo Title Text 1")
 
 
 
-##Module descriptions:
-###PreProcessing:
+## Module descriptions:
+### PreProcessing:
 Include XML Parser, Data cleaning, formatting
-###Models:
+### Models:
 Include classifier Benchmarker for Vectorized Features, and CRFClassifier
-###PostProcessing:
+### PostProcessing:
 Convert Extended BIO to regular BIO tag format, as well as convolution format to sentence format.
 
-##License:
+## License:
 No License, Free to Use :)
