@@ -41,6 +41,7 @@ def word2features(sent, i):
         'word.isdigit=%s' % word.isdigit(),
         'word.isstop=%s' % (word in stops),
         'word.length=%s' % len(word),
+        #'word.long=%s' % (len(word) >= 5),
         'postag=' + postag,
         'postag[:2]=' + postag[:2]
     ]
@@ -154,6 +155,31 @@ def conv2sentence(tagged_fn, cleaned_fn):
     df = pd.DataFrame({'review': doc, 'terms': predicted_tags})
 
     return df
+
+
+def tf(word, words):
+    return words.count(word)/float(len(words))
+
+
+def n_containing(word, doc):
+    return sum(1 for sentence in doc if word in sentence.split())
+
+
+def idf(word, doc):
+    return math.log(len(doc) / float((1 + n_containing(word, doc))))
+
+
+def tfidf(word, words, doc):
+    """
+    hand crafted tfidf without normalization.
+    :param word:
+    :param words:
+    :param doc:
+    :return:
+    """
+    return tf(word, words) * idf(word, doc)
+
+
 
 
 def add_tfidf_to_feature(X, df, vectorizer):

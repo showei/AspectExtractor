@@ -160,4 +160,6 @@ if __name__ == "__main__":
 
     crf.state_features()
 
+    crf.learned_transitions()
+
 

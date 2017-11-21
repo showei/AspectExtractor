@@ -9,7 +9,6 @@ __pycache__/
 *.toc
 *.out
 *.snm
-*.pdf
 __init__.py
 *.txt
 *.png
