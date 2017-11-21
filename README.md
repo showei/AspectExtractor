@@ -1,9 +1,12 @@
 # Aspect Terms Extraction
 Evaluated two types of methodologies WITHOUT Deep Learning: word vector and semantic features
 
+## How to run
+pip install -r requirements.txt\
+python main.py
 
 ## Requirements:
-Python 3.5 (other version should be fine, not tested though)\
+Python 3.5 (other version should be fine, not tested though)
 * numpy
 * pandas
 * scikit-learn
