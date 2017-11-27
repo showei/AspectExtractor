@@ -223,7 +223,8 @@ def add_frequent_terms_to_feature(X, cleaned_fn, top_num=100):
     :return:
     """
     df = pd.read_csv(cleaned_fn)
-    terms_list = df['terms'].apply(lambda row: re.split("[ ,;:(]", str(row)))
+    df_train = pd.read_csv("{}/cleaned_train.csv".format(DATA_PATH))
+    terms_list = df_train['terms'].apply(lambda row: re.split("[ ,;:(]", str(row)))
 
     terms_list = [item for sublist in terms_list for item in sublist]
     frequent_terms = list(dict(collections.Counter(terms_list).most_common(top_num)).keys())
@@ -234,7 +235,7 @@ def add_frequent_terms_to_feature(X, cleaned_fn, top_num=100):
     for i, sentence_feature in enumerate(X):
         for j, word_feature in enumerate(sentence_feature):
             if (not doc[i][j] in stops) and (doc[i][j] in frequent_terms):
-                word_feature.append("FRQ_TERM")
+                word_feature.append("{}_FRQ_TERM".format(top_num))
 
     return X
 
@@ -252,7 +253,11 @@ def constructSemanticInput(tagged_fn, cleaned_fn):
     y = [sent2labels(term) for term in df['terms']]
 
     #add if it is frequent aspect term to feature
+    #add_frequent_terms_to_feature(X, cleaned_fn, top_num=200)
     add_frequent_terms_to_feature(X, cleaned_fn)
+    add_frequent_terms_to_feature(X, cleaned_fn, top_num=50)
+    add_frequent_terms_to_feature(X, cleaned_fn, top_num=10)
+
 
     return X, y
 

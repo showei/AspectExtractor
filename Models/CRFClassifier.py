@@ -20,8 +20,8 @@ class CRFClassifier:
         """
         self.clf = None
         self.params = {
-            'c1': c1,
-            'c2': c2,
+            #'c1': c1,
+            #'c2': c2,
             'max_iterations': max_iterations,
 
             # include transitions that are possible, but not observed
@@ -36,13 +36,13 @@ class CRFClassifier:
         :param y_train:
         :return:
         """
-        trainer = pycrfsuite.Trainer(verbose=True)
+        trainer = pycrfsuite.Trainer(verbose=True, algorithm='ap')
 
         for xseq, yseq in zip(X_train, y_train):
             trainer.append(xseq, yseq)
 
         trainer.set_params(self.params)
-
+        print(trainer.get_params())
         trainer.train('crf_model.crfsuite')
 
     def predict(self, X_test):
